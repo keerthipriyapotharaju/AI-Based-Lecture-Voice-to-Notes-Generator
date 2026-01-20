@@ -1,6 +1,6 @@
 import streamlit as st
 import whisper
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import subprocess
@@ -8,7 +8,7 @@ import tempfile
 
 # ---------- LOAD ENV VARIABLES ----------
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # ---------- STREAMLIT CONFIG ----------
 st.set_page_config(page_title="Lecture Voice to Notes", layout="centered")
@@ -22,8 +22,10 @@ def load_whisper_model():
 
 model = load_whisper_model()
 
-# ---------- FUNCTIONS ----------
+# ---------- OPENAI CLIENT ----------
+client = OpenAI(api_key=openai_api_key)
 
+# ---------- FUNCTIONS ----------
 def extract_audio(video_path):
     """
     Converts mp4 video to mp3 audio using ffmpeg.
@@ -44,7 +46,7 @@ def ai_response(prompt):
     """
     Generates AI response (summary or quiz) using OpenAI GPT-4o-mini.
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3
@@ -91,4 +93,3 @@ if uploaded_file:
 
         st.subheader("❓ Quiz")
         st.write(quiz)
-
